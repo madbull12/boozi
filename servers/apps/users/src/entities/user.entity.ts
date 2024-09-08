@@ -1,7 +1,7 @@
 import { ObjectType, Field, Directive } from "@nestjs/graphql";
 
 @ObjectType()
-@Directive('@key(fields:"id"')
+// @Directive("@key(fields:'id'")
 export class Avatars {
     @Field()
     id:string;

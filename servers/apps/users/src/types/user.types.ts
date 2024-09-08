@@ -26,6 +26,6 @@ export class LoginResponse {
     @Field(() => User,{ nullable:true})
     user?: User | any;
 
-    @Field(() => User,{ nullable:true})
+    @Field(() => ErrorType,{ nullable:true})
     error?: ErrorType;
 }
