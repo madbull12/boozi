@@ -19,20 +19,22 @@ enum Role {
 }
 
 model Avatars {
-  id        String @id @default(uuid()) @map("_id") @db.ObjectId
+  id        String @id @default(uuid()) @map("_id")
   public_id String
   url       String
-  userId    String @unique @db.ObjectId
+  userId    String @unique
   user      User   @relation(fields: [userId], references: [id])
 }
 
 model User {
-  id        String   @id @default(uuid()) @map("_id") @db.ObjectId
-  name      String
-  email     String
-  password  String
-  avatar    Avatars?
-  role      Role     @default(User)
-  createdAt DateTime @default(now())
-  updateAt  DateTime @default(now())
+  id           String   @id @default(uuid()) @map("_id")
+  name         String
+  phone_number String   @unique
+  address      String
+  email        String   @unique
+  password     String
+  avatar       Avatars?
+  role         Role     @default(User)
+  createdAt    DateTime @default(now())
+  updateAt     DateTime @default(now())
 }

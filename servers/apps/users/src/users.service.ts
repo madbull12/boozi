@@ -1,9 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto, RegisterDto } from './dto/user.dto';
 import { PrismaService } from '../../../prisma/Prisma.service';
+import { Response } from 'express';
+import * as bcrpyt from 'bcrypt'
 
+interface UserData {
+  phone_number:string;
+  name:string;
+  password:string;
+  email:string;
+  address:string;
+}
 @Injectable()
 export class UsersService {
   constructor(
@@ -12,15 +21,62 @@ export class UsersService {
     private readonly configService:ConfigService
   ) {}
 
-  async register(registerDto:RegisterDto) {
-    const { email,name,password } = registerDto;
-    const user = {
-      email,
-      name,
-      password
+  async register(registerDto:RegisterDto,response:Response) {
+    const { email,name,password,phone_number,address } = registerDto;
+
+    const isEmailExist = await this.prisma.user.findUnique({
+      where:{
+        email
+      }
+    });
+    if(isEmailExist) {
+      throw new BadRequestException("User already exist with this email")
+    }
+    const isPhoneNumberExist = await this.prisma.user.findUnique({
+      where:{
+        phone_number
+      }
+    });
+    if(isPhoneNumberExist) {
+      throw new BadRequestException("Phone number's already been used")
     }
 
-    return user;
+    const hashedPassword = await bcrpyt.hash(password,10 )
+    const userData = {
+      email,
+      name,
+      password:hashedPassword,
+      phone_number,
+      address
+    }
+
+    const activationToken = await this.createActivationToken(userData);
+    const activationCode = activationToken.activationCode;
+
+    console.log(activationCode)
+    // const user = await this.prisma.user.create({
+    //   data:userData
+    // });
+    return {
+      // user,
+      userData,
+      response
+    }
+  }
+
+  async createActivationToken(user:UserData) {
+    const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const token = this.jwtService.sign(
+      {
+        user,
+        activationCode
+      },{
+        secret:this.configService.get<string>("JWT_SECRET")
+      }
+    )
+
+    return { token,activationCode }
   }
   async login(loginDto:LoginDto) {
     const { email,password } = loginDto;
