@@ -17,7 +17,7 @@ export class Avatars {
 
 @ObjectType()
 export class User {
-    @Field()
+    @Field({nullable:true})
     id:string;
 
     @Field()
@@ -38,6 +38,6 @@ export class User {
     @Field()
     createdAt:Date;
 
-    @Field()
-    updatedAt:Date;
+    @Field({nullable:true})
+    updatedAt?:Date;
 }

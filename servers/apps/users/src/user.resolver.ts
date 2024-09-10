@@ -20,10 +20,8 @@ export class UsersResolver {
             throw new BadRequestException("Please fill all the fields")
         }
 
-        const user = await this.userService.register(registerDto,ctx.res)
-        return {
-            user
-        }
+       return await this.userService.register(registerDto,ctx.res)
+      
     }
 
     @Query(()=>[User])

@@ -43,7 +43,7 @@ export class UsersService {
       throw new BadRequestException("Phone number's already been used")
     }
 
-    const hashedPassword = await bcrpyt.hash(password,10 )
+    const hashedPassword = await bcrpyt.hash(password,10)
     const userData = {
       email,
       name,
@@ -62,12 +62,11 @@ export class UsersService {
       name,
       activationCode
     })
-    // const user = await this.prisma.user.create({
-    //   data:userData
-    // });
+    const user = await this.prisma.user.create({
+      data:userData
+    });
     return {
-      // user,
-      userData,
+      user,
       response
     }
   }

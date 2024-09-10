@@ -21,7 +21,7 @@ import { EmailService } from './email/email.service';
       }
     }),
  
-    // EmailModule
+    EmailModule
   ],
   providers: [UsersService,ConfigService,JwtService,PrismaService,UsersResolver],
 })
