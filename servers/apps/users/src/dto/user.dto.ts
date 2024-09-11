@@ -56,12 +56,10 @@ export class ActivationDto {
 export class LoginDto {
     @Field()
     @IsNotEmpty({
-        message:"Name is required."
-    })
-    @IsString({
-        message:"Name must need to be a string"
-    })
-    name:string;
+        message:"Email is required"
+    })  
+    @IsEmail({},{ message:"Email is invalid"})
+    email: string;
 
     @Field()
     @IsNotEmpty({
@@ -70,10 +68,5 @@ export class LoginDto {
     @MinLength(8,{message:"Password must be at least 8 characters"})
     password:string;
 
-    @Field()
-    @IsNotEmpty({
-        message:"Email is required"
-    })  
-    @IsEmail({},{ message:"Email is invalid"})
-    email: string;
+
 }
