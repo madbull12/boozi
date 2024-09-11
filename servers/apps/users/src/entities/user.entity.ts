@@ -29,14 +29,17 @@ export class User {
     @Field()
     password:string;
 
+    @Field({nullable:true})
+    address?:string;
+
     @Field(()=>Avatars,{ nullable:true })
     avatar?:Avatars | null
 
     @Field()
     role:string;
 
-    @Field()
-    createdAt:Date;
+    @Field({nullable:true})
+    createdAt?:Date;
 
     @Field({nullable:true})
     updatedAt?:Date;

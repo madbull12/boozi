@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto, RegisterDto } from './dto/user.dto';
+import { ActivationDto, LoginDto, RegisterDto } from './dto/user.dto';
 import { PrismaService } from '../../../prisma/Prisma.service';
 import { Response } from 'express';
 import * as bcrpyt from 'bcrypt'
@@ -12,7 +12,7 @@ interface UserData {
   name:string;
   password:string;
   email:string;
-  address:string;
+  address?:string;
 }
 @Injectable()
 export class UsersService {
@@ -44,15 +44,16 @@ export class UsersService {
     }
 
     const hashedPassword = await bcrpyt.hash(password,10)
-    const userData = {
+    const user = {
       email,
       name,
       password:hashedPassword,
       phone_number,
-      address
+      address,
+
     }
 
-    const activationToken = await this.createActivationToken(userData);
+    const activationToken = await this.createActivationToken(user);
     const activationCode = activationToken.activationCode;
 
     await this.emailService.sendMail({
@@ -62,11 +63,11 @@ export class UsersService {
       name,
       activationCode
     })
-    const user = await this.prisma.user.create({
-      data:userData
-    });
+    // const user = await this.prisma.user.create({
+    //   data:userData
+    // });
     return {
-      user,
+      activationToken,
       response
     }
   }
@@ -85,14 +86,52 @@ export class UsersService {
 
     return { token,activationCode }
   }
-  async login(loginDto:LoginDto) {
-    const { email,password } = loginDto;
-    const user = {
-      email,
-      password
+
+  async activateUser(activationDto:ActivationDto,res:Response) {
+    const {activationCode,activationToken } = activationDto
+
+    const newUser:{ user:UserData, activationCode:string}  = this.jwtService.verify(activationToken,{secret:this.configService.get<string>("JWT_SECRET")});
+    if(newUser.activationCode !== activationCode) {
+      throw new BadRequestException("Invalid activation code")
+    } 
+    const { name,email,password,phone_number } = newUser.user;
+
+    const existUser = await this.prisma.user.findUnique({
+      where:{
+        email
+      }
+    });
+
+    if(existUser) {
+      throw new BadRequestException("User already exist with this email!")
     }
 
-    return user;
+    const user = await this.prisma.user.create({
+      data:{
+        name,
+        email,
+        password,
+        phone_number
+      }
+    })
+
+    return { user }
+  }
+  async login(loginDto:LoginDto) {
+    const { email,password } = loginDto;
+    const user = await this.prisma.user.findUnique({
+      where:{
+        email
+      }
+    });
+
+    if(user && await bcrpyt.compare(password,user.password)) {
+      return user;
+
+    } else {
+      throw new BadRequestException("Invalid credentials!")
+    }
+
   }
 
   async getUsers() {

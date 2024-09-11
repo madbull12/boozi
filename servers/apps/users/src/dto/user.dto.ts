@@ -32,12 +32,24 @@ export class RegisterDto {
     })  
     phone_number:string;
 
-    @Field()
-    @IsNotEmpty({
-        message:"Address is required"
-    }) 
+    @Field({nullable:true})
+
     address:string;
 
+}
+
+@InputType()
+export class ActivationDto {
+    @Field()
+    @IsNotEmpty({
+        message:"Activation code is required."
+    })
+    activationCode:string;
+    @Field()
+    @IsNotEmpty({
+        message:"Activation token is required."
+    })
+    activationToken:string;
 }
 
 @InputType()
